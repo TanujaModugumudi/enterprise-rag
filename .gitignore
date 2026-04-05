@@ -1,0 +1,40 @@
+# Virtual environment — recreatable, never commit
+venv/
+env/
+.venv/
+
+# API keys and secrets — NEVER commit these
+.env
+*.env
+
+# Python cache files — auto-generated, not needed
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Raw PDF data — too large for Git, not source code
+data/raw/
+
+# Chroma vector database — auto-generated during ingestion
+chroma_db/
+*.db
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/
+
+# Windows system files
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
