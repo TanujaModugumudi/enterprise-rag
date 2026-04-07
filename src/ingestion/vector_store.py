@@ -103,7 +103,7 @@ def verify_store() -> None:
     Quick sanity check — queries the collection with a test question
     to confirm retrieval is working after ingestion.
     """
-    from embedder import get_embedding_model
+    from src.ingestion.embedder import get_embedding_model
 
     client = get_chroma_client()
     collection = get_or_create_collection(client)

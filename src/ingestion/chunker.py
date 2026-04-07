@@ -20,11 +20,12 @@ def create_splitter() -> RecursiveCharacterTextSplitter:
     )
 
 
-def chunk_pages(pages: list[dict]) -> list[dict]:
+def chunk_pages(pages) -> list[dict]:
     """
-    Takes the list of page dicts from the loader and splits each page
-    into smaller chunks. Every chunk inherits the metadata of its
-    parent page (source, domain, page_number) and gets a unique chunk_id.
+    Takes the list of Document objects from the loader and splits
+    each page into smaller chunks. Every chunk inherits the metadata
+    of its parent page (source, domain, page_number) and gets a
+    unique chunk_id.
 
     Returns a flat list of chunk dicts.
     """
@@ -32,21 +33,28 @@ def chunk_pages(pages: list[dict]) -> list[dict]:
     all_chunks = []
 
     for page in pages:
-        # Split the page text into chunks
-        texts = splitter.split_text(page["text"])
+        # Document objects use .page_content and .metadata
+        # not dictionary keys like page["text"]
+        text        = page.page_content
+        source      = page.metadata["source"]
+        domain      = page.metadata["domain"]
+        page_number = page.metadata["page_number"]
 
-        for i, text in enumerate(texts):
+        # Split the page text into chunks
+        texts = splitter.split_text(text)
+
+        for i, chunk_text in enumerate(texts):
             # Skip chunks that are too short to be meaningful
-            if len(text.strip()) < 30:
+            if len(chunk_text.strip()) < 30:
                 continue
 
             chunk = {
-                "text": text,
-                "source": page["source"],
-                "domain": page["domain"],
-                "page_number": page["page_number"],
+                "text":        chunk_text,
+                "source":      source,
+                "domain":      domain,
+                "page_number": page_number,
                 # unique id: filename_stem + page + chunk index
-                "chunk_id": f"{Path(page['source']).stem}_p{page['page_number']}_c{i}",
+                "chunk_id": f"{Path(source).stem}_p{page_number}_c{i}",
             }
             all_chunks.append(chunk)
 
@@ -54,17 +62,19 @@ def chunk_pages(pages: list[dict]) -> list[dict]:
 
 
 if __name__ == "__main__":
-    # Test chunker with the loader
-    from loader import load_all_documents
+    from loader import load_domain
 
-    pages = load_all_documents()
+    pages = []
+    pages.extend(load_domain("data/raw/finance", "finance"))
+    pages.extend(load_domain("data/raw/legal",   "legal"))
+    pages.extend(load_domain("data/raw/hr",      "hr"))
+
     chunks = chunk_pages(pages)
 
     print(f"\nTotal pages : {len(pages)}")
     print(f"Total chunks: {len(chunks)}")
     print(f"Avg chunks per page: {len(chunks)/len(pages):.1f}")
 
-    # Show a sample chunk
     sample = chunks[10]
     print(f"\n--- SAMPLE CHUNK ---")
     print(f"chunk_id   : {sample['chunk_id']}")
